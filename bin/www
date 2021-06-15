@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+const http = require('http');
+
+const app = require('../app');
+const config = require('../config');
+
+/**
+ * Get port from environment and store in Express.
+ */
+
+const { host } = config.app;
+const { port } = config.app;
+app.set('port', port);
+
+/**
+ * Sync Database.
+ */
+
+const { User } = require('../auth/models');
+const { Content } = require('../content/models');
+
+User.hasMany(Content);
+Content.belongsTo(User);
+
+(async () => {
+  try {
+    await config.db.sync({ force: true });
+    console.log('All models were synchronized successfully.');
+  } catch (err) {
+    console.log(err);
+  }
+})();
+
+/**
+ * Create HTTP server.
+ */
+
+const server = http.createServer(app);
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+// eslint-disable-next-line no-console
+console.log(`app running -> ${host}:${port}`);
+server.listen(port);
